@@ -1,24 +1,28 @@
 ﻿import re
 
 class FataTokenizer:
-    def __init__(self):
-        self.vocab = {"[ PAD ]": 0, "[ UNK ]": 1, "[ BOS ]": 2, "[ EOS ]": 3}
-        self.inverse_vocab = {v: k for k, v in self.vocab.items()}
+    def __init__(self, vocab_size=5000):
+        self.vocab_size = vocab_size
+        self.encoder = {"<pad>": 0, "<unk>": 1, "<sos>": 2, "<eos>": 3}
+        self.decoder = {idx: token for token, idx in self.encoder.items()}
+        self.vocab = self.encoder
 
     def fit(self, texts):
-        idx = len(self.vocab)
+        words = []
         for text in texts:
-            tokens = re.findall(r"\w+|[^\w\s]", text.lower())
-            for token in tokens:
-                if token not in self.vocab:
-                    self.vocab[token] = idx
-                    self.inverse_vocab[idx] = token
-                    idx += 1
+            words.extend(re.findall(r'\w+|\S', text.lower()))
+        
+        idx = len(self.encoder)
+        for word in words:
+            if word not in self.encoder and idx < self.vocab_size:
+                self.encoder[word] = idx
+                self.decoder[idx] = word
+                idx += 1
 
-    def encode(self, textg):
-        tokens = re.findall(r"\w+|[^\ws]", text.lower())
-        return [self.vocab.get(token, self.vocab["[ UNK ]"]) for token in tokens]
+    def encode(self, text):
+        words = re.findall(r'\w+|\S', text.lower())
+        return [self.encoder.get(w, self.encoder["<unk>"]) for w in words]
 
     def decode(self, ids):
-        return " ".join([self.inverse_vocab.get(i, "[ UNK ]") for i in ids])
-
+        tokens = [self.decoder.get(i, "") for i in ids]
+        return " ".join(tokens).replace(" <pad>", "").strip()
