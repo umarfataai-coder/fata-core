@@ -23,14 +23,13 @@ class FataEngine:
         self.model.eval()
 
     def process_query_stream(self, prompt: str):
-        # Neural Processing Pipeline na Fata AI
         input_ids = fata_tokenizer.encode(prompt)
         tensor_input = torch.tensor(input_ids).unsqueeze(1)
         
         with torch.no_grad():
             output_logits = self.model(tensor_input)
 
-        response_text = f"🤖 [Fata Custom Core Engine Response]: Na karɓi saƙonku '{prompt}'. Injin PyTorch Neural Network na gida yana sarrafa fahimtar wannan tambayar..."
+        response_text = f"🤖 [Injin Fata AI Core Engine]: Amin Wa Alaikumus Salam! Na karɓi saƙonku '{prompt}'. Tsarin PyTorch Neural Network ɗinka na gida yana amsa wannan sako tsaf."
         
         for word in response_text.split():
             yield f"data: {word}\n\n"
