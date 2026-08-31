@@ -1,9 +1,13 @@
 ﻿from fastapi import FastAPI, File, UploadFile
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from app.model_engine import fata_engine
 from app.vision_engine import fata_vision
 
 app = FastAPI(title="Fata AI - Multimodal Autonomous Agent")
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 class GenerateRequest(BaseModel):
     prompt: str
@@ -11,7 +15,7 @@ class GenerateRequest(BaseModel):
 
 @app.get("/")
 def read_root():
-    return {"status": "Fata AI Engine Active (PyTorch, Atlas Vector, Code Agent & Multimodal Vision)"}
+    return FileResponse("static/index.html")
 
 @app.post("/generate")
 def generate(req: GenerateRequest):
