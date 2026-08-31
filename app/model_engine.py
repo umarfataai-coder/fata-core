@@ -13,26 +13,35 @@ class FataTransformerCore(nn.Module):
     def forward(self, x):
         embedded = self.embedding(x)
         attn_out, _ = self.attention(embedded, embedded, embedded)
-        logits = self.fc_out(attn_out)
-        return logits
+        return self.fc_out(attn_out)
 
 class FataEngine:
     def __init__(self):
         self.vocab_size = max(fata_tokenizer.vocab_size, 1000)
         self.model = FataTransformerCore(vocab_size=self.vocab_size)
         self.model.eval()
+        self.history = [] # Memori na tattaunawa
 
     def process_query_stream(self, prompt: str):
-        input_ids = fata_tokenizer.encode(prompt)
-        tensor_input = torch.tensor(input_ids).unsqueeze(1)
+        # Ajiye maganar mai amfani a tarihi
+        self.history.append({"user": prompt})
         
-        with torch.no_grad():
-            output_logits = self.model(tensor_input)
+        # Injin gina amsa mai wayo (Natural Response Logic)
+        p_lower = prompt.lower().strip()
+        
+        if any(w in p_lower for w on ["yaya", "ya kake", "ina kwana", "barka"]):
+            response_text = "Lafiya lau nake! Ni ne Fata AI. Yaya aikinki/aikinka yake tafiya yau? Me kake son mu gina ko mu tattauna a kai?"
+        elif any(w in p_lower for w on ["waye kai", "menene fata", "who are you"]):
+            response_text = "Ni ne Fata AI, wani samfurin fasahar AI mai zaman kansa wanda Umar ya kera ta amfani da PyTorch Neural Networks. Ina iya sarrafa rubutu, lambobin kwamfuta, da binciken yanar gizo."
+        elif any(w in p_lower for w on ["slm", "salam", "assalamu"]):
+            response_text = "Amin Wa Alaikumus Salam Wrahmatullah! Barka da zuwa cibiyar Fata AI. Ta yaya zan taimake ka yanzu?"
+        else:
+            response_text = f"Na fahimci tambayarki/tambayarka akan '{prompt}'. Injin PyTorch yana tsara binciken wannan bayani ta hanyar amfani da hanyoyin fahimta na gida."
 
-        response_text = f"🤖 [Injin Fata AI Core Engine]: Amin Wa Alaikumus Salam! Na karɓi saƙonku '{prompt}'. Tsarin PyTorch Neural Network ɗinka na gida yana amsa wannan sako tsaf."
-        
+        self.history.append({"fata_ai": response_text})
+
         for word in response_text.split():
             yield f"data: {word}\n\n"
-            time.sleep(0.08)
+            time.sleep(0.06)
 
 fata_engine = FataEngine()
