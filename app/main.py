@@ -7,7 +7,7 @@ from app.vision_engine import fata_vision
 from app.code_agent import fata_code_agent
 from app.vector_store import fata_memory
 
-app = FastAPI(title="Fata AI - Multimodal Autonomous Agent")
+app = FastAPI(title="Fata AI - Autonomous Multimodal Architecture")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -23,6 +23,13 @@ def read_root():
 
 @app.get("/generate-stream")
 def generate_stream(prompt: str):
+    # Idan mai amfani ya nemi abu daga memory
+    if "memory" in prompt.lower() or "tuna" in prompt.lower():
+        mem_res = fata_memory.search_memory(prompt)
+        def stream_memory():
+            yield f"data: {mem_res} \n\n"
+        return StreamingResponse(stream_memory(), media_type="text/event-stream")
+    
     return StreamingResponse(fata_engine.process_query_stream(prompt), media_type="text/event-stream")
 
 @app.post("/execute-code")
