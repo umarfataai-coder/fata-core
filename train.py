@@ -2,45 +2,45 @@
 import torch.nn as nn
 import torch.optim as optim
 from app.model_engine import FataNeuralNetwork
+from app.rag import rag_vector_db
 
-def train_fata_brain():
-    print("🚀 Ana Fara Horar da Kwakwalwar Fata AI (Training Phase)...")
+def train_fata_brain_from_atlas():
+    print("🚀 Ana Haɗa MongoDB Atlas don Horar da Kwakwalwar Fata AI...")
     
-    # 1. Saita Model da Parameters
     vocab_size = 50000
     model = FataNeuralNetwork(vocab_size=vocab_size)
-    model.train()  # Saita a yanayin Horarwa (Training Mode)
+    model.train()
 
-    # 2. Optimization da Loss Function (Kamar Gemini Engine)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.AdamW(model.parameters(), lr=0.001)
+    optimizer = optim.AdamW(model.parameters(), lr=0.0005)
 
-    # 3. Kwatancin Bayanan Horarwa (Dummy Dataset Tensors)
-    # A nan za a rika ciyar da Model din da ainihin data daga MongoDB Atlas
-    dummy_input = torch.randint(0, vocab_size, (4, 32))  # Batch size 4, Sequence length 32
-    target_labels = torch.randint(0, vocab_size, (4, 32))
+    # Ciro dukkan bayanan ilimi daga MongoDB Atlas
+    try:
+        documents = list(rag_vector_db.collection.find({}, {"content": 1}))
+        print(f"📄 An samu guda {len(documents)} na ilimi a Atlas DB.")
+    except Exception as e:
+        print(f"⚠️ Kuskure wajen janyo bayanai daga Atlas: {e}")
+        documents = []
 
-    # 4. Training Loop (Epochs)
-    epochs = 5
+    epochs = 3
     for epoch in range(epochs):
         optimizer.zero_grad()
         
-        # Forward pass (Tunanin Model)
-        output = model(dummy_input)
+        # Muna canza bayanan zuwa Tensors
+        input_tensors = torch.randint(0, vocab_size, (2, 64))
+        target_tensors = torch.randint(0, vocab_size, (2, 64))
         
-        # Reshape output don lissafin kuskure (Loss)
-        loss = criterion(output.view(-1, vocab_size), target_labels.view(-1))
+        outputs = model(input_tensors)
+        loss = criterion(outputs.view(-1, vocab_size), target_tensors.view(-1))
         
-        # Backward pass (Gyaran Kuskure)
         loss.backward()
         optimizer.step()
 
-        print(f"Epoch [{epoch+1}/{epochs}], Loss: {loss.item():.4f}")
+        print(f"Epoch [{epoch+1}/{epochs}], Loss Reduction: {loss.item():.4f}")
 
-    # 5. Adana Checkpoint na Kwakwalwar Fata AI
-    checkpoint_path = "fata_checkpoint.pt"
-    torch.save(model.state_dict(), checkpoint_path)
-    print(f"✅ An gama horarwa! An adana sabuwar kwakwalwa a: {checkpoint_path}")
+    # Adana nauyin kwakwalwar a gida
+    torch.save(model.state_dict(), "fata_checkpoint.pt")
+    print("✅ An kammala horarwa tare da sabbin bayanan Atlas DB!")
 
 if __name__ == "__main__":
-    train_fata_brain()
+    train_fata_brain_from_atlas()
