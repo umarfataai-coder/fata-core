@@ -7,6 +7,7 @@ from app.vision_engine import fata_vision
 from app.code_agent import fata_code_agent
 from app.vector_store import fata_memory
 from app.tool_router import fata_router
+from app.trainer import fata_trainer
 
 app = FastAPI(title="Fata AI - Autonomous Multimodal Architecture")
 
@@ -17,6 +18,9 @@ class CodeRequest(BaseModel):
 
 class MemoryRequest(BaseModel):
     text: str
+
+class TrainRequest(BaseModel):
+    dataset: list[str]
 
 @app.get("/")
 def read_root():
@@ -42,6 +46,11 @@ def generate_stream(prompt: str):
         return StreamingResponse(stream_web(), media_type="text/event-stream")
 
     return StreamingResponse(fata_engine.process_query_stream(prompt), media_type="text/event-stream")
+
+@app.post("/train-model")
+def train_model(req: TrainRequest):
+    result = fata_trainer.train_on_text(req.dataset)
+    return {"status": result}
 
 @app.post("/execute-code")
 def execute_code(req: CodeRequest):
