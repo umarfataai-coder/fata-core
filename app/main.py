@@ -24,7 +24,6 @@ def read_root():
 
 @app.get("/generate-stream")
 def generate_stream(prompt: str):
-    # Dynamic Router decision
     route = fata_router.route_and_execute(prompt)
     
     if route["type"] == "code_execution":
@@ -36,6 +35,11 @@ def generate_stream(prompt: str):
         def stream_mem():
             yield f"data: {route['result']} \n\n"
         return StreamingResponse(stream_mem(), media_type="text/event-stream")
+
+    elif route["type"] == "web_search":
+        def stream_web():
+            yield f"data: {route['result']} \n\n"
+        return StreamingResponse(stream_web(), media_type="text/event-stream")
 
     return StreamingResponse(fata_engine.process_query_stream(prompt), media_type="text/event-stream")
 
