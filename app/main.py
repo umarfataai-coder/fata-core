@@ -4,6 +4,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from app.model_engine import fata_engine
 from app.vision_engine import fata_vision
+from app.cache import fata_cache
 
 app = FastAPI(title="Fata AI - Multimodal Autonomous Agent")
 
@@ -20,7 +21,21 @@ def read_root():
 @app.post("/generate")
 def generate(req: GenerateRequest):
     user_prompt = req.prompt.strip()
+    
+    # 1. Duba ko amsar tana cikin Redis Cache
+    cached_res = fata_cache.get_cached_response(user_prompt)
+    if cached_res:
+        return {
+            "prompt": req.prompt,
+            "response": f"[⚡ Fast Redis Cache Response]:\n{cached_res}"
+        }
+
+    # 2. Idan babu a cache, a sarrafa shi ta PyTorch Engine
     response_text = fata_engine.process_query(user_prompt)
+    
+    # 3. Adana amsar a Redis Cache don gaba
+    fata_cache.set_cached_response(user_prompt, response_text)
+    
     return {
         "prompt": req.prompt,
         "response": response_text
