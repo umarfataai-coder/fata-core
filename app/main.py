@@ -6,6 +6,7 @@ from app.model_engine import fata_engine
 from app.vision_engine import fata_vision
 from app.code_agent import fata_code_agent
 from app.vector_store import fata_memory
+from app.tool_router import fata_router
 
 app = FastAPI(title="Fata AI - Autonomous Multimodal Architecture")
 
@@ -23,13 +24,19 @@ def read_root():
 
 @app.get("/generate-stream")
 def generate_stream(prompt: str):
-    # Idan mai amfani ya nemi abu daga memory
-    if "memory" in prompt.lower() or "tuna" in prompt.lower():
-        mem_res = fata_memory.search_memory(prompt)
-        def stream_memory():
-            yield f"data: {mem_res} \n\n"
-        return StreamingResponse(stream_memory(), media_type="text/event-stream")
+    # Dynamic Router decision
+    route = fata_router.route_and_execute(prompt)
     
+    if route["type"] == "code_execution":
+        def stream_code():
+            yield f"data: 🤖 [Autonomous Code Agent Output]:\n{route['result']} \n\n"
+        return StreamingResponse(stream_code(), media_type="text/event-stream")
+        
+    elif route["type"] == "memory_retrieval":
+        def stream_mem():
+            yield f"data: {route['result']} \n\n"
+        return StreamingResponse(stream_mem(), media_type="text/event-stream")
+
     return StreamingResponse(fata_engine.process_query_stream(prompt), media_type="text/event-stream")
 
 @app.post("/execute-code")
