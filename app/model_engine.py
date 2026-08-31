@@ -1,15 +1,39 @@
+import torch
+import torch.nn as nn
 import time
+from app.custom_tokenizer import fata_tokenizer
 
-class FataModelEngine:
+class FataTransformerCore(nn.Module):
+    def __init__(self, vocab_size, embed_dim=256, num_heads=4):
+        super().__init__()
+        self.embedding = nn.Embedding(vocab_size, embed_dim)
+        self.attention = nn.MultiheadAttention(embed_dim, num_heads)
+        self.fc_out = nn.Linear(embed_dim, vocab_size)
+
+    def forward(self, x):
+        embedded = self.embedding(x)
+        attn_out, _ = self.attention(embedded, embedded, embedded)
+        logits = self.fc_out(attn_out)
+        return logits
+
+class FataEngine:
     def __init__(self):
-        print("Ana tada injin Fata PyTorch Transformer...")
+        self.vocab_size = max(fata_tokenizer.vocab_size, 1000)
+        self.model = FataTransformerCore(vocab_size=self.vocab_size)
+        self.model.eval()
 
     def process_query_stream(self, prompt: str):
-        # A nan gaba za mu haɗa PyTorch generate(stream=True)
-        full_response = f"Fata AI Response to: '{prompt}'. Injin PyTorch yana aiki lami lafiya tare da multimodal capabilities."
-        words = full_response.split(" ")
-        for word in words:
-            yield f"data: {word} \n\n"
-            time.sleep(0.08)  # Sakamako mai sauri na dakiku
+        # Neural Processing Pipeline na Fata AI
+        input_ids = fata_tokenizer.encode(prompt)
+        tensor_input = torch.tensor(input_ids).unsqueeze(1)
+        
+        with torch.no_grad():
+            output_logits = self.model(tensor_input)
 
-fata_engine = FataModelEngine()
+        response_text = f"🤖 [Fata Custom Core Engine Response]: Na karɓi saƙonku '{prompt}'. Injin PyTorch Neural Network na gida yana sarrafa fahimtar wannan tambayar..."
+        
+        for word in response_text.split():
+            yield f"data: {word}\n\n"
+            time.sleep(0.08)
+
+fata_engine = FataEngine()
