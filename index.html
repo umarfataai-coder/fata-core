@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ha">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fata AI - Super Intelligence</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0f19; color: #f8fafc; height: 100vh; display: flex; flex-direction: column; }
+        .header { background: #1e1b4b; padding: 20px; text-align: center; font-size: 26px; font-weight: bold; border-bottom: 2px solid #6366f1; letter-spacing: 2px; }
+        .chat-container { flex: 1; max-width: 900px; width: 100%; margin: 20px auto; background: #1e293b; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .message { padding: 12px 18px; border-radius: 8px; max-width: 85%; line-height: 1.6; font-size: 16px; white-space: pre-wrap; }
+        .user-message { background: #4f46e5; color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .bot-message { background: #334155; color: #f8fafc; align-self: flex-start; border-bottom-left-radius: 2px; border-left: 4px solid #6366f1; }
+        .input-group { display: flex; padding: 15px; background: #0f172a; gap: 10px; border-top: 1px solid #334155; }
+        input { flex: 1; padding: 14px; border-radius: 8px; border: 1px solid #475569; background: #1e293b; color: #fff; font-size: 16px; outline: none; }
+        input:focus { border-color: #6366f1; }
+        button { padding: 14px 28px; background: #4f46e5; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #4338ca; }
+    </style>
+</head>
+<body>
+
+<div class="header">✨ FATA AI ENGINE</div>
+
+<div class="chat-container">
+    <div class="chat-box" id="chatBox">
+        <div class="message bot-message">
+            <b>Fata AI:</b> Barka da zuwa Shugaba! Ni ne Fata AI Engine. An haɗa ni da server ɗinka lami lafiya. Tambaye ni kowace irin tambaya don fara tattaunawa.
+        </div>
+    </div>
+    <div class="input-group">
+        <input type="text" id="userInput" placeholder="Rubuta saƙo zuwa ga Fata AI..." onkeypress="handleKeyPress(event)">
+        <button onclick="sendMessage()">Tura</button>
+    </div>
+</div>
+
+<script>
+    function handleKeyPress(e) {
+        if (e.key === 'Enter') sendMessage();
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById("userInput");
+        const chatBox = document.getElementById("chatBox");
+        const userText = input.value.trim();
+
+        if (!userText) return;
+
+        // Display User Message
+        chatBox.innerHTML += `<div class="message user-message"><b>Kai:</b> ${userText}</div>`;
+        input.value = "";
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Display Loading Indicator
+        const loadingId = "loading-" + Date.now();
+        const loadingDiv = document.createElement("div");
+        loadingDiv.className = "message bot-message";
+        loadingDiv.id = loadingId;
+        loadingDiv.innerHTML = "<b>Fata AI:</b> Ina tunani da bincike...";
+        chatBox.appendChild(loadingDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        try {
+            const res = await fetch('http://127.0.0.1:8000/v1/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: "Founder", prompt: userText })
+            });
+            const data = await res.json();
+            
+            // Remove loading and show response
+            document.getElementById(loadingId).remove();
+            chatBox.innerHTML += `<div class="message bot-message"><b>Fata AI:</b> ${data.response}</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        } catch (err) {
+            document.getElementById(loadingId).remove();
+            chatBox.innerHTML += `<div class="message bot-message" style="color: #ef4444;"><b>Error:</b> An samu matsalar haɗawa da Fata AI Server. Tabbatar 'fata_core.py' tana aiki.</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    }
+</script>
+
+</body>
+</html>
