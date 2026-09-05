@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fata AI - Super Intelligence</title>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Marked.js for Markdown Parser -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- Highlight.js for Code Styling -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
     
@@ -16,68 +13,78 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: #0f172a; color: #f8fafc; height: 100vh; display: flex; overflow: hidden; }
 
-        /* Sidebar Styling */
         .sidebar { width: 260px; background: #1e293b; border-right: 1px solid #334155; display: flex; flex-direction: column; padding: 15px; }
-        .new-chat-btn { background: #4f46e5; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 20px; transition: 0.2s; }
+        .new-chat-btn { background: #4f46e5; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 20px; }
         .new-chat-btn:hover { background: #4338ca; }
         .history-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
         .history-item { padding: 10px; border-radius: 6px; background: #334155; cursor: pointer; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .history-item:hover { background: #475569; }
 
-        /* Main Chat Area */
         .main-chat { flex: 1; display: flex; flex-direction: column; background: #0f172a; }
         .header { background: #1e293b; padding: 15px 20px; border-bottom: 1px solid #334155; font-size: 18px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; }
         .chat-box { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 20px; }
 
-        /* Messages */
         .message { max-width: 85%; padding: 14px 18px; border-radius: 12px; font-size: 15px; line-height: 1.6; }
         .user-message { background: #4f46e5; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
         .bot-message { background: #1e293b; color: #f8fafc; align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid #334155; }
 
-        /* Code Block Styling */
         pre { background: #090d16; padding: 12px; border-radius: 6px; overflow-x: auto; margin-top: 8px; margin-bottom: 8px; }
         code { font-family: 'Courier New', Courier, monospace; }
 
-        /* Input Bar */
-        .input-container { padding: 20px; background: #1e293b; border-top: 1px solid #334155; display: flex; gap: 12px; align-items: center; }
+        .input-container { padding: 20px; background: #1e293b; border-top: 1px solid #334155; display: flex; gap: 10px; align-items: center; }
         textarea { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; font-size: 15px; outline: none; resize: none; height: 48px; max-height: 120px; }
-        textarea:focus { border-color: #6366f1; }
+        
+        .action-btn { background: #334155; color: white; border: 1px solid #475569; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 16px; }
+        .action-btn:hover { background: #475569; }
         .send-btn { background: #4f46e5; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; height: 48px; }
         .send-btn:hover { background: #4338ca; }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar -->
     <div class="sidebar">
         <button class="new-chat-btn" onclick="startNewChat()"><i class="fa-solid fa-plus"></i> Sabuwar Hira</button>
         <div class="history-list" id="historyList"></div>
     </div>
 
-    <!-- Main Chat Window -->
     <div class="main-chat">
         <div class="header">
-            <span>✨ Fata AI Engine (Llama 3.1 Brain)</span>
-            <span style="font-size: 12px; color: #10b981;"><i class="fa-solid fa-circle"></i> Local Engine Online</span>
+            <span>✨ Fata AI Engine (Llama 3.1 Multimodal Core)</span>
+            <span style="font-size: 12px; color: #10b981;"><i class="fa-solid fa-circle"></i> Engine Active</span>
         </div>
 
         <div class="chat-box" id="chatBox">
             <div class="message bot-message">
-                <b>Fata AI:</b> Barka da zuwa Shugaba Umar! Ni ne Fata AI Engine. An haɗa ni da Llama 3.1. Tambaye ni kowace irin tambaya ko neman taimakon gina code!
+                <b>Fata AI:</b> Barka da zuwa Shugaba Umar! Ni ne Fata AI Engine. An shirya ni da Llama 3.1. Za ka iya aiko min da tambayoyi ko ɗora fayil/hoto!
             </div>
         </div>
 
         <div class="input-container">
+            <!-- Hidden File Input -->
+            <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(event)">
+            <button class="action-btn" onclick="document.getElementById('fileInput').click()" title="Ɗora Hoto ko Fayil">
+                <i class="fa-solid fa-paperclip"></i>
+            </button>
+            
             <textarea id="userInput" placeholder="Rubuta saƙo zuwa ga Fata AI..." onkeydown="checkEnter(event)"></textarea>
             <button class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
 <script>
+    let selectedFile = null;
+
     function checkEnter(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
+        }
+    }
+
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) {
+            selectedFile = file;
+            alert(`Ka zaɓi fayil: ${file.name}`);
         }
     }
 
@@ -93,18 +100,20 @@
         const chatBox = document.getElementById("chatBox");
         const userText = input.value.trim();
 
-        if (!userText) return;
+        if (!userText && !selectedFile) return;
 
-        // Display User Message
-        chatBox.innerHTML += `<div class="message user-message"><b>Kai:</b> ${userText}</div>`;
-        
-        // Add to history sidebar
-        addHistoryItem(userText);
+        let userDisplay = userText;
+        if (selectedFile) {
+            userDisplay += `<br><small>📎 <i>Fayil: ${selectedFile.name}</i></small>`;
+        }
+
+        chatBox.innerHTML += `<div class="message user-message"><b>Kai:</b> ${userDisplay}</div>`;
+        addHistoryItem(userText || selectedFile.name);
         
         input.value = "";
+        selectedFile = null;
         chatBox.scrollTop = chatBox.scrollHeight;
 
-        // Display Loading
         const loadingId = "loading-" + Date.now();
         const loadingDiv = document.createElement("div");
         loadingDiv.className = "message bot-message";
@@ -123,11 +132,9 @@
             
             document.getElementById(loadingId).remove();
             
-            // Format AI response with Markdown & Code Highlight
             const formattedResponse = marked.parse(data.response);
             chatBox.innerHTML += `<div class="message bot-message"><b>Fata AI:</b><br>${formattedResponse}</div>`;
             
-            // Apply code styling
             hljs.highlightAll();
             chatBox.scrollTop = chatBox.scrollHeight;
         } catch (err) {
