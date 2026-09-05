@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fata AI - Super Intelligence</title>
+    <title>Fata AI - Voice & Text Super Intelligence</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
@@ -23,9 +23,12 @@
         .header { background: #1e293b; padding: 15px 20px; border-bottom: 1px solid #334155; font-size: 18px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; }
         .chat-box { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 20px; }
 
-        .message { max-width: 85%; padding: 14px 18px; border-radius: 12px; font-size: 15px; line-height: 1.6; }
+        .message { max-width: 85%; padding: 14px 18px; border-radius: 12px; font-size: 15px; line-height: 1.6; position: relative; }
         .user-message { background: #4f46e5; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
         .bot-message { background: #1e293b; color: #f8fafc; align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid #334155; }
+
+        .speak-btn { background: transparent; border: none; color: #94a3b8; cursor: pointer; margin-top: 8px; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; }
+        .speak-btn:hover { color: #38bdf8; }
 
         pre { background: #090d16; padding: 12px; border-radius: 6px; overflow-x: auto; margin-top: 8px; margin-bottom: 8px; }
         code { font-family: 'Courier New', Courier, monospace; }
@@ -35,6 +38,14 @@
         
         .action-btn { background: #334155; color: white; border: 1px solid #475569; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 16px; }
         .action-btn:hover { background: #475569; }
+        .mic-active { background: #ef4444 !important; color: white !important; animation: pulse 1s infinite; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
         .send-btn { background: #4f46e5; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; height: 48px; }
         .send-btn:hover { background: #4338ca; }
     </style>
@@ -48,30 +59,88 @@
 
     <div class="main-chat">
         <div class="header">
-            <span>✨ Fata AI Engine (Llama 3.1 Multimodal Core)</span>
-            <span style="font-size: 12px; color: #10b981;"><i class="fa-solid fa-circle"></i> Engine Active</span>
+            <span>✨ Fata AI Engine (Multimodal Voice Core)</span>
+            <span style="font-size: 12px; color: #10b981;"><i class="fa-solid fa-circle"></i> Voice Enabled</span>
         </div>
 
         <div class="chat-box" id="chatBox">
             <div class="message bot-message">
-                <b>Fata AI:</b> Barka da zuwa Shugaba Umar! Ni ne Fata AI Engine. An shirya ni da Llama 3.1. Za ka iya aiko min da tambayoyi ko ɗora fayil/hoto!
+                <b>Fata AI:</b> Barka da zuwa Shugaba Umar! Za ka iya magana da baki ta hanyar danna maɓallin Microbe 🎙️ ko ka rubuta saƙo!
             </div>
         </div>
 
         <div class="input-container">
-            <!-- Hidden File Input -->
             <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(event)">
-            <button class="action-btn" onclick="document.getElementById('fileInput').click()" title="Ɗora Hoto ko Fayil">
+            <button class="action-btn" onclick="document.getElementById('fileInput').click()" title="Ɗora Fayil">
                 <i class="fa-solid fa-paperclip"></i>
             </button>
+
+            <!-- Maɓallin Murya (Voice Input) -->
+            <button class="action-btn" id="micBtn" onclick="toggleVoiceInput()" title="Yi Magana da Baki">
+                <i class="fa-solid fa-microphone"></i>
+            </button>
             
-            <textarea id="userInput" placeholder="Rubuta saƙo zuwa ga Fata AI..." onkeydown="checkEnter(event)"></textarea>
+            <textarea id="userInput" placeholder="Rubuta saƙo ko danna microphone..." onkeydown="checkEnter(event)"></textarea>
             <button class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
 <script>
     let selectedFile = null;
+    let recognition = null;
+    let isListening = false;
+
+    // Check for Browser Voice Recognition Support
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            document.getElementById("userInput").value = transcript;
+            toggleVoiceInput();
+            sendMessage();
+        };
+
+        recognition.onerror = function(event) {
+            console.error("Speech Recognition Error:", event.error);
+            toggleVoiceInput();
+        };
+
+        recognition.onend = function() {
+            if (isListening) toggleVoiceInput();
+        };
+    }
+
+    function toggleVoiceInput() {
+        const micBtn = document.getElementById("micBtn");
+        if (!recognition) {
+            alert("Sadarwar muryar ba ta samuwa a wannan Browser din. Yi amfani da Chrome.");
+            return;
+        }
+
+        if (!isListening) {
+            recognition.start();
+            isListening = true;
+            micBtn.classList.add("mic-active");
+        } else {
+            recognition.stop();
+            isListening = false;
+            micBtn.classList.remove("mic-active");
+        }
+    }
+
+    function speakText(text) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const cleanText = text.replace(/<[^>]*>?/gm, '');
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.rate = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+    }
 
     function checkEnter(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -133,7 +202,15 @@
             document.getElementById(loadingId).remove();
             
             const formattedResponse = marked.parse(data.response);
-            chatBox.innerHTML += `<div class="message bot-message"><b>Fata AI:</b><br>${formattedResponse}</div>`;
+            const msgId = "msg-" + Date.now();
+            
+            chatBox.innerHTML += `
+                <div class="message bot-message" id="${msgId}">
+                    <b>Fata AI:</b><br>${formattedResponse}
+                    <button class="speak-btn" onclick="speakText(\`${data.response.replace(/[`"\\]/g, '')}\`)">
+                        <i class="fa-solid fa-volume-high"></i> Saurari Muryar Fata AI
+                    </button>
+                </div>`;
             
             hljs.highlightAll();
             chatBox.scrollTop = chatBox.scrollHeight;
